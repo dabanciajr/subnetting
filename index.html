@@ -4843,7 +4843,10 @@
             optDiv.style.display = "grid";
             typeRowEl.style.display = "none";
             optDiv.innerHTML =
-              '<div style="color:var(--red);font-size:12px;padding:10px;grid-column:1/-1;text-align:center;">Error generating question. <button onclick="nextQuestion()" style="color:var(--amber);text-decoration:underline;background:none;border:none;cursor:pointer;">Retry</button></div>';
+              '<div style="color:var(--red);font-size:12px;padding:10px;grid-column:1/-1;text-align:center;">Error generating question. <button id="genRetryBtn" style="color:var(--amber);text-decoration:underline;background:none;border:none;cursor:pointer;">Retry</button></div>';
+            optDiv
+              .querySelector("#genRetryBtn")
+              .addEventListener("click", nextQuestion);
             return;
           }
           qStartTime = Date.now();
@@ -4912,7 +4915,10 @@
             optDiv.innerHTML = "";
             if (!current.options || current.options.length === 0) {
               optDiv.innerHTML =
-                '<div style="color:var(--red);font-size:12px;padding:10px;">Error generating options. <button onclick="nextQuestion()" style="color:var(--amber);text-decoration:underline;background:none;border:none;cursor:pointer;">Retry</button></div>';
+                '<div style="color:var(--red);font-size:12px;padding:10px;">Error generating options. <button id="optRetryBtn" style="color:var(--amber);text-decoration:underline;background:none;border:none;cursor:pointer;">Retry</button></div>';
+              optDiv
+                .querySelector("#optRetryBtn")
+                .addEventListener("click", nextQuestion);
             } else {
               current.options.forEach((optVal, i) => {
                 const btn = document.createElement("button");
@@ -5152,14 +5158,28 @@
           let footHtml = "";
           if (!sprint.active && !exam.active) {
             footHtml +=
-              '<button class="btn2" id="resultNextBtn" onclick="closeModal(\'resultModal\');nextQuestion();">Next question \u2192 <span class="kbd">[Enter]</span></button>';
+              '<button class="btn2" id="resultNextBtn" type="button">Next question \u2192 <span class="kbd">[Enter]</span></button>';
             footHtml +=
-              '<button class="link-btn" id="resultBookmarkBtn" onclick="bookmarkCurrent();this.textContent=\'\u2605 Saved\';this.disabled=true;">\u2605 Save</button>';
+              '<button class="link-btn" id="resultBookmarkBtn" type="button">\u2605 Save</button>';
           } else {
             footHtml +=
               '<span style="font-size:11px;color:var(--muted);">Auto-advancing...</span>';
           }
           foot.innerHTML = footHtml;
+          if (!sprint.active && !exam.active) {
+            foot
+              .querySelector("#resultNextBtn")
+              .addEventListener("click", () => {
+                closeModal("resultModal");
+                nextQuestion();
+              });
+            const bmBtn = foot.querySelector("#resultBookmarkBtn");
+            bmBtn.addEventListener("click", () => {
+              bookmarkCurrent();
+              bmBtn.textContent = "\u2605 Saved";
+              bmBtn.disabled = true;
+            });
+          }
           openModal("resultModal");
         }
 
@@ -6253,6 +6273,8 @@
         setupModal("bookmarkModal", "bookmarkClose");
         setupModal("calcModal", "calcClose");
         setupModal("resetModal", "resetModalClose");
+        setupModal("achieveModal", "achieveClose");
+        setupModal("goalsModal", "goalsClose");
 
         function renderReferenceTable() {
           const tbody = document.getElementById("refTableBody");
